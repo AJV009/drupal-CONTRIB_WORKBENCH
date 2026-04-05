@@ -29,6 +29,7 @@ skills: drupal-testing
 - **Access control**: Test permissions and route access
 - **Plugin**: Test block, field formatter/widget, and other plugin types
 - **Configuration**: Verify config exists with expected values
+- **Visual (UI bugs)**: Verify page rendering, form layout, element visibility via `agent-browser`
 
 ## Execution Rules
 
@@ -38,6 +39,34 @@ skills: drupal-testing
 - Never execute destructive operations
 - Complex PHP goes in a script file, not inline
 - `drush eval`: one-line PHP only, no `use` statements
+
+## Visual Verification (for UI bugs)
+
+When the fix involves UI changes (form display, field visibility, AJAX behavior, CSS),
+use `agent-browser` to verify visually. This is optional and only for UI-related issues.
+
+```bash
+# Login to DDEV site
+ULI=$(ddev drush uli --no-browser 2>/dev/null)
+agent-browser open "$ULI" && agent-browser wait --load networkidle
+
+# Navigate to the affected page
+agent-browser open "https://d{issue_id}.ddev.site/path/to/page"
+agent-browser wait --load networkidle
+
+# Check element visibility/state
+agent-browser is visible "#edit-submit"
+agent-browser get text ".messages--error"
+agent-browser snapshot -i  # Get interactive elements
+
+# Screenshot as evidence
+agent-browser screenshot --full "DRUPAL_ISSUES/{issue_id}/screenshots/verified.png"
+
+# Close when done
+agent-browser close
+```
+
+For the full command reference, see the `agent-browser` skill.
 
 ## Output Format
 

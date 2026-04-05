@@ -54,7 +54,7 @@ Which option?
 - Report results when done
 
 ### Option 2: Post Comment
-- Open drupal.org issue page via Chrome MCP
+- Open drupal.org issue page via agent-browser
 - Navigate to comment form
 - Paste the draft comment
 - (Or just remind user to do it manually with the file path)

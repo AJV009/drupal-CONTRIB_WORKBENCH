@@ -124,34 +124,31 @@ Accept either format:
 - `https://www.drupal.org/project/{project}/issues/{id}`
 - Just the number: `3577386`
 
-Use the browser (Claude Chrome) to read the full issue page. WebFetch can work
-but may miss nuance in long threads — prefer the browser for issues with many
-comments.
+### Primary path: API artifacts (from Step 0)
 
-### What to read (in order)
-
-1. **Sidebar metadata** — status, version, component, tags, assigned
-2. **Issue body** — problem, steps to reproduce, proposed resolution
-3. **Every single comment** — chronologically. Don't skip any.
-4. **MR descriptions and diffs** — if merge requests exist, read them
-5. **Linked/related issues** — if comments reference other issues (like a
-   parent issue or blocking issue), read those too
-6. **File attachments** — screenshots, videos, patches. View screenshots
-   if they exist.
-
-### When artifacts are available (Step 0 succeeded)
-
-Read the artifacts instead of scrolling the browser:
+Read the artifacts fetched by the `drupal-issue-fetcher` agent:
 - `artifacts/issue.json` for sidebar metadata (status, version, component, priority, tags)
 - `artifacts/comments.json` for the full comment thread (already numbered and chronological)
 - `artifacts/merge-requests.json` for MR details and the primary MR flag
 - `artifacts/mr-{iid}-diff.patch` for MR diffs
-- `artifacts/mr-{iid}-discussions.json` for MR review discussions — read these **in conjunction with** `comments.json` to get the full picture. Issue comments capture the high-level thread on drupal.org, while MR discussions capture inline code review feedback on specific files/lines in GitLab. Both are needed for complete understanding of what reviewers asked for and what was addressed.
-- Use the browser ONLY for: viewing screenshots, visual verification, or when artifacts are incomplete
+- `artifacts/mr-{iid}-discussions.json` for MR review discussions -- read these **in conjunction with** `comments.json` to get the full picture. Issue comments capture the high-level thread on drupal.org, while MR discussions capture inline code review feedback on specific files/lines in GitLab. Both are needed for complete understanding of what reviewers asked for and what was addressed.
+
+The API artifacts contain all textual data: metadata, comments with HTML bodies, MR diffs, and review discussions. No browser is needed for reading issue content.
 
 ### When artifacts are NOT available (Step 0 failed)
 
-Fall back to the original browser-based approach described above.
+Fall back to `WebFetch` to read the issue page. For issues with embedded screenshots that need visual inspection, use `agent-browser` (see the `agent-browser` skill for usage).
+
+### What to read (in order)
+
+1. **Sidebar metadata** -- status, version, component, tags, assigned
+2. **Issue body** -- problem, steps to reproduce, proposed resolution
+3. **Every single comment** -- chronologically. Don't skip any.
+4. **MR descriptions and diffs** -- if merge requests exist, read them
+5. **Linked/related issues** -- if comments reference other issues (like a
+   parent issue or blocking issue), read those too
+6. **File attachments** -- screenshots referenced in comment HTML can be
+   viewed with `agent-browser` if visual inspection is needed
 
 ### What to extract
 

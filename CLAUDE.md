@@ -6,6 +6,23 @@ This workspace is for contributing to Drupal core and contributed modules on dru
 
 - **ajv009** on drupal.org is Alphons — the person running this Claude Code setup and all associated commands/skills.
 
+## Approach
+
+- Think before acting. Read existing files before writing code.
+- Prefer editing over rewriting whole files.
+- Do not re-read files already read in this session unless they may have changed.
+- Keep solutions simple and direct. No abstractions for single-use operations.
+- No sycophantic openers or closing fluff.
+- User instructions (and additional instructions via `-i`) always override this file.
+
+## Output Style
+
+- Lead with the finding or action, not the reasoning.
+- Tables and bullets over prose paragraphs.
+- No decorative Unicode: no smart quotes, em dashes, en dashes, or ellipsis characters. Use plain hyphens, commas, colons, and periods.
+- Code output must be copy-paste safe.
+- No status narration ("Now I will...", "I have completed..."). Just do it.
+
 ## Environment
 
 - Local development via **DDEV** (`ddev start`, `ddev drush`, `ddev composer`)
@@ -36,6 +53,7 @@ This workspace is for contributing to Drupal core and contributed modules on dru
 - PHPDoc on all public methods
 - `$this->t()` for user-facing strings, never hardcoded
 - 2-space indentation (not 4)
+- No docstrings, comments, or type annotations on code you did not change
 - Run before submitting: `ddev exec phpcs --standard=Drupal,DrupalPractice`
 
 ## Testing Requirements
@@ -127,6 +145,11 @@ When a skill's instructions say to "delegate to" or "use" a companion skill (e.g
 | `/drupal-dev-patterns` | Implementing hooks, creating services, DI, or security patterns |
 | `/drupal-docs` | Need Drupal documentation, API reference, or practical code examples |
 
+### Browser Automation
+| Skill | Auto-invoke when |
+|-------|-----------------|
+| `/agent-browser` | Need to interact with a website: take screenshots, fill forms, click buttons, verify UI, reproduce visual bugs. Installed at `~/.cargo/bin/agent-browser` (v0.19.0, Rust CLI, headless Chrome). No npm/Playwright/Chrome MCP needed. |
+
 ### drupalorg-cli (Preferred for MR Operations)
 
 Installed at `scripts/drupalorg` (v0.8.5 phar, runs via Docker PHP, no host PHP needed).
@@ -174,6 +197,14 @@ Every agent MUST report one of these statuses:
 | FAILED | Unrecoverable error | Retry once. If fails again, ask human |
 
 When dispatching agents, handle all 5 statuses. Do not assume DONE.
+
+### Agent Dispatch Rules
+
+- Agents execute. They do not narrate what they are doing.
+- Agent output must be structured: status code, findings, evidence. No prose filler.
+- Never invent file paths, API endpoints, function names, or field names in agent prompts or output. If a value is unknown, use "UNKNOWN". Never guess.
+- Token efficiency matters: pipeline calls compound. Return minimum viable output that satisfies the task.
+- If an agent step fails: state what failed, why, and what was attempted. Stop.
 
 ## Available Agents
 

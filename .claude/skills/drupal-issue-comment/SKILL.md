@@ -103,17 +103,29 @@ Issue references auto-link: `[#1234567]` becomes a clickable link to that issue.
 
 ### Capturing
 
-Use **Playwright** (or any headless browser) to take clean screenshots.
+Use `agent-browser` (installed at `~/.cargo/bin/agent-browser`, headless, no npm/node needed).
+For the full command reference, see the `agent-browser` skill at `.claude/skills/agent-browser/SKILL.md`.
 
 ```bash
-npm install playwright
-npx playwright install chromium
-```
+# Login to DDEV site
+ULI=$(ddev drush uli --no-browser 2>/dev/null)
+agent-browser open "$ULI"
+agent-browser wait --load networkidle
 
-Write a small `.mjs` script that:
-1. Logs into the ddev site via a `drush uli` one-time link
-2. Navigates to each relevant page
-3. Takes a `fullPage: true` screenshot at each step
+# Navigate and screenshot each relevant page
+agent-browser open "https://d{issue_id}.ddev.site/path/to/page"
+agent-browser wait --load networkidle
+agent-browser screenshot --full "DRUPAL_ISSUES/{issue_number}/screenshots/01-page-name.png"
+
+# For before/after comparisons
+agent-browser screenshot "DRUPAL_ISSUES/{issue_number}/screenshots/before.png"
+# ... apply fix, reload ...
+agent-browser reload && agent-browser wait --load networkidle
+agent-browser screenshot "DRUPAL_ISSUES/{issue_number}/screenshots/after.png"
+
+# Always close when done
+agent-browser close
+```
 
 Name screenshots with numbered prefixes and descriptive slugs:
 ```

@@ -77,7 +77,7 @@ Issue URL/number
         ▼
  ┌─────────────┐
  │ 4. REPRODUCE│  Follow the issue's steps to reproduce
- │    THE BUG  │  Take screenshots with Playwright
+ │    THE BUG  │  Take screenshots with agent-browser
  └──────┬──────┘
         ▼
  ┌─────────────┐
@@ -231,22 +231,40 @@ To test WITHOUT the fix (reproduce the original bug), just use the module as-is.
 
 Follow the issue's steps to reproduce **exactly**. If steps involve UI configuration:
 
-1. Generate a login link: `ddev drush uli`
-2. Use Claude Chrome or Playwright to navigate and interact
+1. Generate a login link: `ddev drush uli --no-browser`
+2. Use `agent-browser` to navigate and interact (invoke the `/agent-browser` skill for detailed usage)
 3. Take screenshots at each significant step
 
-### Screenshot capture
+### Screenshot capture with agent-browser
 
-**Prefer Chrome MCP tools** (already available, no installation needed):
-1. `mcp__claude-in-chrome__navigate` to open the DDEV site (use uli link)
-2. `mcp__claude-in-chrome__computer` with screenshot action to capture pages
-3. `mcp__claude-in-chrome__gif_creator` for multi-step workflows
+Use `agent-browser` (installed at `~/.cargo/bin/agent-browser`, headless by default, no npm/node needed).
 
-**Fallback (if Chrome MCP unavailable):** Install Playwright:
 ```bash
-cd "$ISSUE_DIR"
-npm init -y && npm install playwright
-npx playwright install chromium
+# Login to DDEV site
+ULI=$(ddev drush uli --no-browser 2>/dev/null)
+agent-browser open "$ULI"
+agent-browser wait --load networkidle
+
+# Navigate to the relevant page
+agent-browser open "https://d{issue_id}.ddev.site/admin/config/some/page"
+agent-browser wait --load networkidle
+
+# Take screenshot
+agent-browser screenshot --full "$ISSUE_DIR/screenshots/01-page-name.png"
+
+# For interactive elements, use snapshot to get refs
+agent-browser snapshot -i
+# Then interact: agent-browser click @e1, agent-browser fill @e2 "value", etc.
+
+# After interacting, re-snapshot and screenshot the result
+agent-browser snapshot -i
+agent-browser screenshot --full "$ISSUE_DIR/screenshots/02-after-action.png"
+
+# Check for error messages on page
+agent-browser get text ".messages--error"
+
+# Always close when done
+agent-browser close
 ```
 
 Save screenshots to `$ISSUE_DIR/screenshots/` with numbered prefixes:
@@ -258,6 +276,8 @@ screenshots/
   03-error-triggered.png
   04-watchdog-log.png
 ```
+
+For the full command reference and patterns (form filling, auth persistence, diffing, etc.), see the `agent-browser` skill at `.claude/skills/agent-browser/SKILL.md`.
 
 ### Check error logs
 
