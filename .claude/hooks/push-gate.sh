@@ -7,21 +7,37 @@ INPUT=$(cat)
 TOOL=$(echo "$INPUT" | jq -r '.tool_name // ""')
 [[ "$TOOL" != "Bash" ]] && exit 0
 
-CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
-[[ ! "$CMD" =~ git\ push ]] && exit 0
-
-# We're in a git push. Find the checklist.
+# Only gate pushes that originate from within a DRUPAL_ISSUES work tree.
+# This replaces the fragile "git push" regex that matched the substring
+# inside commit messages, heredocs, and non-issue pushes alike.
 PROJECT_DIR=$(echo "$INPUT" | jq -r '.cwd // "."')
-CHECKLIST=$(find "$PROJECT_DIR" -path "*/DRUPAL_ISSUES/*/workflow/03-push-gate-checklist.json" \
-  -mmin -60 2>/dev/null | head -1)
+NID=$(echo "$PROJECT_DIR" | grep -oP 'DRUPAL_ISSUES/\K[0-9]+' | head -1 || true)
+[[ -z "$NID" ]] && exit 0
+
+# We're inside a DRUPAL_ISSUES tree. Now check if this is actually a push.
+CMD=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
+# Use word-boundary-safe check: match "git push" or "git -C ... push" at
+# command boundaries, not inside quoted strings or commit messages.
+if ! echo "$CMD" | grep -qP '^\s*(?:cd\s+[^;]*;\s*)?(?:GIT_\w+=\S+\s+)*git\s+(?:-C\s+\S+\s+)?push\b'; then
+  exit 0
+fi
+
+# Direct path lookup instead of find.
+CHECKLIST=""
+if [[ -n "$NID" && -n "$CLAUDE_PROJECT_DIR" ]]; then
+  CANDIDATE="$CLAUDE_PROJECT_DIR/DRUPAL_ISSUES/$NID/workflow/03-push-gate-checklist.json"
+  if [[ -f "$CANDIDATE" ]]; then
+    AGE_MIN=$(( ($(date +%s) - $(stat -c %Y "$CANDIDATE")) / 60 ))
+    if (( AGE_MIN < 60 )); then
+      CHECKLIST="$CANDIDATE"
+    fi
+  fi
+fi
 
 if [[ -z "$CHECKLIST" ]]; then
-  NID=$(echo "$PROJECT_DIR" | grep -oE 'DRUPAL_ISSUES/[0-9]+' | head -1 | cut -d/ -f2 || true)
-  if [[ -n "$NID" ]]; then
-    bd remember "Blocked premature push for $NID: no checklist" \
-      --key "phase.push_gate.blocked.$NID" 2>/dev/null || true
-  fi
-  echo "BLOCKED: No push-gate checklist found (workflow/03-push-gate-checklist.json)." >&2
+  bd remember "Blocked premature push for $NID: no checklist" \
+    --key "phase.push_gate.blocked.$NID" 2>/dev/null || true
+  echo "BLOCKED: No push-gate checklist found for issue $NID (workflow/03-push-gate-checklist.json)." >&2
   echo "Run the full Pre-Push Quality Gate before pushing." >&2
   exit 2
 fi
