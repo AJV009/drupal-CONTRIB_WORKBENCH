@@ -2,6 +2,20 @@
 
 An automated workflow for fixing, reviewing, and contributing to Drupal.org issues — powered by Claude Code with structured skills, subagents, and mechanical enforcement hooks.
 
+## Contents
+
+- [How it works](#how-it-works) — what a single `./drupal-issue.sh` run actually does
+- [Classification categories](#classification-categories) — how issues get routed (categories A–J)
+- [Mechanical enforcement](#mechanical-enforcement) — hooks that block bad pushes and premature stops
+- [Cross-issue memory](#cross-issue-memory) — `bd` (beads) as institutional memory
+- [Repository structure](#repository-structure) — what lives where
+- [Prerequisites](#prerequisites) — required tools and versions
+- [**Setup**](#setup) — **start here: `./install.sh`**
+- [Quirks and known gotchas](#quirks-and-known-gotchas) — `pwd -P`, bd config, DDEV
+- [Workflow state files](#workflow-state-files) — per-issue state registry
+- [Key commands](#key-commands) — cheat sheet
+- [License](#license)
+
 ## How it works
 
 ```
@@ -181,27 +195,32 @@ These surface automatically in `artifacts/prior-knowledge.json` without user pro
 ## Setup
 
 ```bash
-# 1. Clone the workbench
-git clone <repo-url> ~/drupal/CONTRIB_WORKBENCH
-cd ~/drupal/CONTRIB_WORKBENCH
+# Clone and run the interactive installer
+git clone https://github.com/AJV009/drupal-CONTRIB_WORKBENCH.git
+cd drupal-CONTRIB_WORKBENCH
+./install.sh
+```
 
-# 2. Install bd and initialize
-go install github.com/steveyegge/beads/cmd/bd@latest
+`install.sh` prompts for:
+
+1. **drupal.org username** — written to `CLAUDE.local.md` so the agent knows whose d.o account to act as.
+2. **Anthropic API key** (optional) — used only by the AI-module testing flow described in `CLAUDE.md`; leave blank to skip.
+3. **drupal.org GitLab token** — used to fetch MR notes, pipeline status, and CI logs. Create one at https://git.drupalcode.org/-/user_settings/personal_access_tokens with scopes `read_api` and `read_repository`.
+4. **tui-browser integration** (optional) — enables `tui.json` writes if you use the separate tui-browser terminal UI.
+
+The installer also downloads the `drupalorg-cli` phar from GitHub releases and runs a dependency check for Claude Code, DDEV, `bd`, `jq`, `tmux`, Python, and friends. It is idempotent — re-run it any time to update values; blank answers keep existing ones. All files it writes (`anthropic.key`, `git.drupalcode.org.key`, `CLAUDE.local.md`, `.workbench/`, `scripts/drupalorg.phar`) are gitignored.
+
+### After install
+
+```bash
+# (Optional but recommended) Initialize bd for cross-issue memory
 bd init
-bd setup claude  # Installs SessionStart + PreCompact hooks
-
-# 3. Configure bd (REQUIRED — prevents dolt push conflicts)
-bd config set backup.git-push false
+bd setup claude                      # SessionStart + PreCompact hooks
+bd config set backup.git-push false  # see "bd shared-server mode" below
 bd config set dolt.auto-push false
 bd config set dolt.auto-pull false
 
-# 4. Set up GitLab token (for fetching MR data)
-echo "your-gitlab-token" > git.drupalcode.org.key
-
-# 5. Backfill tui.json ddev_name for existing DDEV stacks
-./pause-orphaned-ddev.sh register
-
-# 6. Run your first issue
+# Run your first issue
 ./drupal-issue.sh https://www.drupal.org/i/3581952
 ```
 
