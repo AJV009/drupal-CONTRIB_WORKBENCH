@@ -21,7 +21,7 @@ You will be given:
 ### Step 1: Read the token
 
 ```bash
-TOKEN=$(cat /home/alphons/drupal/CONTRIB_WORKBENCH/git.drupalcode.org.key)
+TOKEN=$(cat "$CLAUDE_PROJECT_DIR/git.drupalcode.org.key")
 ```
 
 ### Step 2: Get pipeline status

@@ -42,7 +42,7 @@ cp -r .drupal-contribute-fix/${ISSUE_ID}-*/ "$ATTEMPT_DIR/" 2>/dev/null || true
 
 # Capture the actual source diff as a standalone patch for reference
 cd "$MODULE_PATH"
-git diff > "/home/alphons/drupal/CONTRIB_WORKBENCH/$ATTEMPT_DIR/source-changes.patch"
+git diff > "$CLAUDE_PROJECT_DIR/$ATTEMPT_DIR/source-changes.patch"
 cd - > /dev/null
 ```
 

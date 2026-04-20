@@ -202,7 +202,7 @@ instances in DRUPAL_ISSUES/ may be in active use. Only operate within the new
 issue's directory. If there's a port conflict, ask the user.
 
 ```bash
-ISSUE_DIR="/home/alphons/drupal/CONTRIB_WORKBENCH/DRUPAL_ISSUES/{issue_id}"
+ISSUE_DIR="$CLAUDE_PROJECT_DIR/DRUPAL_ISSUES/{issue_id}"
 mkdir -p "$ISSUE_DIR"
 cd "$ISSUE_DIR"
 ```

@@ -45,7 +45,7 @@ Rule: If the version ends with `.x` and does not already end with `-dev`, append
 ### Phase 1: Scaffold (both modes)
 
 ```bash
-WORKBENCH="/home/alphons/drupal/CONTRIB_WORKBENCH"
+WORKBENCH="$CLAUDE_PROJECT_DIR"
 ISSUE_DIR="$WORKBENCH/DRUPAL_ISSUES/{issue_id}"
 ENV_NAME="{project}"  # packagist mode
 # or ENV_NAME="issue-{project}-{issue_id}"  # fork mode

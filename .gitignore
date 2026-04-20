@@ -16,6 +16,11 @@ __pycache__/
 # Runtime
 tui.json
 
+# Installer-generated local files (install.sh)
+CLAUDE.local.md
+.workbench/
+scripts/drupalorg.phar
+
 # Claude session data
 .claude/projects/
 

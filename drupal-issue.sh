@@ -5,6 +5,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 MAP_FILE="$SCRIPT_DIR/DRUPAL_ISSUES/session-map.json"
 SESSION_DIR="$HOME/.claude/projects/$(echo "$SCRIPT_DIR" | sed 's|[/_.]|-|g')"
 
+# --- Local config (set by install.sh; gitignored) ---
+# Defines optional integrations such as WORKBENCH_TUI=1 (tui-browser).
+# Missing file is fine: all integrations default off.
+CONFIG_FILE="$SCRIPT_DIR/.workbench/config.env"
+if [[ -f "$CONFIG_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$CONFIG_FILE"
+fi
+: "${WORKBENCH_TUI:=0}"
+
 # --- bd (beads) env ---
 # Make sure ~/go/bin is on PATH so bd is visible to this shell, the claude
 # subprocess launched below, and any hook that bd setup claude wrote into
@@ -99,6 +109,11 @@ build_prompt_prefix() {
 }
 
 write_tui_json() {
+  # Opt-in: only write tui.json when WORKBENCH_TUI=1 is set in
+  # .workbench/config.env. This is specific to the tui-browser integration
+  # and has no effect on the rest of the workflow.
+  [[ "$WORKBENCH_TUI" != "1" ]] && return 0
+
   local tmux_name issue_id issue_dir tui_file
   tmux_name=$(tmux display-message -p "#{session_name}" 2>/dev/null || echo "")
   [[ -z "$tmux_name" ]] && return 0

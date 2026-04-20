@@ -209,7 +209,7 @@ echo "your-gitlab-token" > git.drupalcode.org.key
 
 ### Path resolution: `pwd -P` everywhere
 
-The workbench physical path is `/mnt/data/drupal/CONTRIB_WORKBENCH`. The user has a bind mount at `/home/alphons/drupal/CONTRIB_WORKBENCH`. Claude Code uses the **physical** path for its projects-dir key. All scripts use `pwd -P` to get the physical path — plain `pwd` returns the logical (bind-mount) path and silently breaks session resume.
+Claude Code keys session JSONLs by the **physical** path of the project dir. If the workbench is reached through a symlink or bind mount (e.g. `~/drupal/CONTRIB_WORKBENCH` pointing at `/mnt/data/drupal/CONTRIB_WORKBENCH`), plain `pwd` returns the *logical* path and silently breaks session resume. All launcher/helper scripts use `pwd -P` (and agents use `$CLAUDE_PROJECT_DIR`, which is always physical) to avoid this. If you keep the repo on a non-symlinked path there is nothing to configure.
 
 ### Projects-dir encoding
 

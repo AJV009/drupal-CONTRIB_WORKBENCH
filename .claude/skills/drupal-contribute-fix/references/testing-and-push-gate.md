@@ -81,7 +81,7 @@ stylelint, and eslint too, and each skipped job is a potential CI
 round-trip.
 
 ```bash
-/mnt/data/drupal/CONTRIB_WORKBENCH/scripts/local_ci_mirror.sh \
+"$CLAUDE_PROJECT_DIR/scripts/local_ci_mirror.sh" \
   web/modules/contrib/<module_name>
 ```
 

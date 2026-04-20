@@ -9,7 +9,7 @@ CI round-trip.
 
 ```bash
 # From anywhere inside the DDEV project:
-/mnt/data/drupal/CONTRIB_WORKBENCH/scripts/local_ci_mirror.sh \
+"$CLAUDE_PROJECT_DIR/scripts/local_ci_mirror.sh" \
   web/modules/contrib/<module_name>
 ```
 
